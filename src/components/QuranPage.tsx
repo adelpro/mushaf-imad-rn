@@ -20,6 +20,8 @@ const LINE_SCALE = width / 1440;
 const FASEL_BALANCE = 3.69;
 const FASEL_WIDTH = 21 * FASEL_BALANCE * LINE_SCALE;
 const FASEL_HEIGHT = 27 * FASEL_BALANCE * LINE_SCALE;
+const SURA_NAME_BAR_CENTER_Y_OFFSET = 6 * LINE_SCALE;
+const FASEL_CENTER_Y_OFFSET = 8 * LINE_SCALE;
 
 interface Props {
   pageNumber: number;
@@ -43,14 +45,14 @@ export const QuranPage: React.FC<Props> = ({
 
     if (!page) return map;
 
-    page.verses1441.forEach((v) => {
-      const marker = v.marker1441;
+    page.verses1441.forEach((verse) => {
+      const marker = verse.marker1441;
       if (!marker) return;
 
       const list = map.get(marker.line) ?? [];
       list.push({
-        verseID: v.verseID,
-        number: v.number,
+        verseID: verse.verseID,
+        number: verse.number,
         centerX: marker.centerX,
         centerY: marker.centerY,
       });
@@ -82,11 +84,12 @@ export const QuranPage: React.FC<Props> = ({
     return Array.from(page.chapterHeaders1441)
       .filter((header) => header.line === lineIndex)
       .map((header, i) => {
-        const centerX = width * (1.0 - header.centerX);
+        const centerX = width * header.centerX;
         const centerY = LINE_HEIGHT * header.centerY;
 
         const left = centerX - SURA_NAME_BAR_WIDTH / 2;
-        const top = centerY - SURA_NAME_BAR_HEIGHT / 2 + 8;
+        const top =
+          centerY - SURA_NAME_BAR_HEIGHT / 2 + SURA_NAME_BAR_CENTER_Y_OFFSET;
 
         return (
           <View
@@ -115,7 +118,7 @@ export const QuranPage: React.FC<Props> = ({
     const cropOffset = (scaledImageHeight - LINE_HEIGHT) / 2;
 
     return markers.map((m) => {
-      const x = width * (1.0 - m.centerX);
+      const x = width * m.centerX;
       const y = scaledImageHeight * m.centerY - cropOffset;
 
       return (
@@ -124,8 +127,8 @@ export const QuranPage: React.FC<Props> = ({
           pointerEvents="none"
           style={{
             position: "absolute",
-            left: x - FASEL_WIDTH / 2 - 2,
-            top: y - FASEL_HEIGHT / 2 + 10 - 4,
+            left: x - FASEL_WIDTH / 2,
+            top: y - FASEL_HEIGHT / 2 + FASEL_CENTER_Y_OFFSET,
           }}
         >
           <VerseFasel number={m.number} scale={LINE_SCALE} />
@@ -138,13 +141,13 @@ export const QuranPage: React.FC<Props> = ({
     if (!page || !activeVerse || !activeChapter) return null;
 
     const versesToHighlight = page.verses1441.filter(
-      (v) => v.chapter?.number === activeChapter && v.number === activeVerse,
+      (v) => v.chapter?.number === activeChapter && v.number === activeVerse
     );
 
     return versesToHighlight.map((v) => {
       const highlights = v.highlights1441.filter((h) => h.line === lineIndex);
       return highlights.map((h, i) => {
-        const left = width * (1.0 - h.right);
+        const left = width * h.left;
         const w = width * (h.right - h.left);
 
         return (

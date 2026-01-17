@@ -1,80 +1,96 @@
-import React, { useState, useRef } from "react";
-import { View, FlatList, StyleSheet, Dimensions } from "react-native";
-import { QuranPage } from "../components/QuranPage";
+import React, { useRef, useState } from "react";
+import {
+  Dimensions,
+  FlatList,
+  StyleSheet,
+  View,
+  ViewToken,
+} from "react-native";
 import { AudioPlayerBar } from "../components/AudioPlayerBar";
-import { RealmService } from "../services/RealmService";
+import { QuranPage } from "../components/QuranPage";
 import { Page } from "../models/schema";
+import { RealmService } from "../services/RealmService";
 
-const { width, height } = Dimensions.get("window");
+const { height, width } = Dimensions.get("window");
 
-export const MushafScreen = () => {
+type ViewableItemsChangedInfo = {
+  viewableItems: ViewToken[];
+};
+
+export function MushafScreen() {
   const [currentChapter, setCurrentChapter] = useState(1);
   const [activeVerse, setActiveVerse] = useState<number | null>(null);
   const pages = Array.from({ length: 604 }, (_, i) => i + 1);
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
-      const pageNum = parseInt(viewableItems[0].key);
-      updateChapter(pageNum);
-    }
-  }).current;
-
-  const updateChapter = async (pageNumber: number) => {
+  async function updateChapter(pageNumber: number) {
     try {
       const realm = await RealmService.getRealm();
       const page = realm
         .objects<Page>("Page")
         .filtered("number == $0", pageNumber)[0];
-      if (page && page.verses1441.length > 0) {
-        const chapterNum = page.verses1441[0].chapter?.number;
-        if (chapterNum && chapterNum !== currentChapter) {
-          setCurrentChapter(chapterNum);
-        }
-      }
-    } catch (e) {
-      console.log("Error getting chapter", e);
+
+      const chapterNum = page?.verses1441?.[0]?.chapter?.number;
+      setCurrentChapter((prev) =>
+        chapterNum && chapterNum !== prev ? chapterNum : prev
+      );
+    } catch (error) {
+      console.log("Error getting chapter", error);
     }
-  };
+  }
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: ViewableItemsChangedInfo) => {
+      const first = viewableItems[0];
+      const pageNum =
+        typeof first?.item === "number"
+          ? first.item
+          : Number.parseInt(first?.key ?? "", 10);
+
+      if (Number.isFinite(pageNum)) {
+        void updateChapter(pageNum);
+      }
+    }
+  ).current;
 
   return (
     <View style={styles.container}>
       <FlatList
         data={pages}
-        keyExtractor={(item) => item.toString()}
+        getItemLayout={(_, index) => ({
+          index,
+          length: width,
+          offset: width * index,
+        })}
         horizontal
-        pagingEnabled
+        initialNumToRender={1}
         inverted
-        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item) => item.toString()}
+        maxToRenderPerBatch={2}
         onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
+        pagingEnabled
+        removeClippedSubviews
         renderItem={({ item }) => (
-          <View style={{ width, height: height - 60 }}>
+          <View style={{ height: height - 60, width }}>
             <QuranPage
-              pageNumber={item}
               activeChapter={currentChapter}
               activeVerse={activeVerse}
+              pageNumber={item}
             />
           </View>
         )}
-        getItemLayout={(_, index) => ({
-          length: width,
-          offset: width * index,
-          index,
-        })}
-        initialNumToRender={1}
-        maxToRenderPerBatch={2}
+        showsHorizontalScrollIndicator={false}
+        viewabilityConfig={{ itemVisiblePercentThreshold: 50 }}
         windowSize={3}
-        removeClippedSubviews
       />
       <View style={{ height: 60 }}>
-        <AudioPlayerBar
+        {/* <AudioPlayerBar
           chapterNumber={currentChapter}
           onVerseChange={(verse) => setActiveVerse(verse)}
-        />
+        /> */}
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

@@ -101,7 +101,7 @@ export class Verse extends Realm.Object<Verse> {
       chapter: "Chapter?",
       part: "Part?",
       quarter: "Quarter?",
-      section: "QuranSection?",
+      section: "Section?",
       page1441: "Page?",
       page1405: "Page?",
       marker1441: "VerseMarker?",
