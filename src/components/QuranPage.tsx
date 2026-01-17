@@ -12,7 +12,6 @@ import SuraNameBar from "../../assets/images/sura_name_bar.svg";
 import { VerseFasel } from "./VerseFasel";
 
 const { width } = Dimensions.get("window");
-// Aspect ratio 1440 / 232 = 6.206
 const LINE_ASPECT_RATIO = 1440 / 232;
 const LINE_HEIGHT = width / LINE_ASPECT_RATIO;
 const SURA_NAME_BAR_WIDTH = width * 0.9;
@@ -35,18 +34,6 @@ export const QuranPage: React.FC<Props> = ({
 }) => {
   const { page, loading } = useQuranPage(pageNumber);
   const images = QuranImages[pageNumber];
-
-  if (loading) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#000" />
-      </View>
-    );
-  }
-
-  if (!images) {
-    return <View style={styles.container} />;
-  }
 
   const markersByLine = React.useMemo(() => {
     const map = new Map<
@@ -76,6 +63,18 @@ export const QuranPage: React.FC<Props> = ({
 
     return map;
   }, [page]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
+  if (!images) {
+    return <View style={styles.container} />;
+  }
 
   const renderSurahTitleBackgrounds = (lineIndex: number) => {
     if (!page) return null;
@@ -139,7 +138,7 @@ export const QuranPage: React.FC<Props> = ({
     if (!page || !activeVerse || !activeChapter) return null;
 
     const versesToHighlight = page.verses1441.filter(
-      (v) => v.chapter?.number === activeChapter && v.number === activeVerse
+      (v) => v.chapter?.number === activeChapter && v.number === activeVerse,
     );
 
     return versesToHighlight.map((v) => {
@@ -156,7 +155,7 @@ export const QuranPage: React.FC<Props> = ({
               left: left,
               width: w,
               height: "100%",
-              backgroundColor: "rgba(88, 168, 105, 0.4)", // Quran green highlight
+              backgroundColor: "rgba(88, 168, 105, 0.4)",
               borderRadius: 4,
             }}
           />

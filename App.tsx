@@ -1,27 +1,42 @@
-import React from "react";
+import { useEffect } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
-import { registerRootComponent } from "expo";
-import { useFonts } from "expo-font";
-import { MushafScreen } from "./src/screens/MushafScreen";
 import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useFonts } from "expo-font";
+
+import { MushafScreen } from "./src/screens/MushafScreen";
+
+SplashScreen.preventAutoHideAsync().catch(() => undefined);
+
+SplashScreen.setOptions({ fade: true, duration: 1000 });
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    uthman_tn1_bold: require("./assets/fonts/UthmanTN1B Ver20.ttf"),
+  const [fontsLoaded, fontError] = useFonts({
+    uthmanTn1Bold: require("./assets/fonts/UthmanTN1B-Ver20.ttf"),
   });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (fontError) {
+    throw fontError;
+  }
 
   if (!fontsLoaded) {
     return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#000" />
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={["left", "right", "bottom"]}>
-      <StatusBar style="dark" translucent backgroundColor="transparent" />
+    <SafeAreaView style={styles.container}>
+      <StatusBar style="dark" />
       <MushafScreen />
     </SafeAreaView>
   );
@@ -32,10 +47,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  center: {
+  loader: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
 });
-
-registerRootComponent(App);
