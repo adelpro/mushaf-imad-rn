@@ -1,12 +1,21 @@
-import React from 'react';
-import { View, Image, StyleSheet, Dimensions, ActivityIndicator } from 'react-native';
-import { QuranImages } from '../constants/imageMap';
-import { useQuranPage } from '../hooks/useQuranPage';
+import React from "react";
+import {
+  View,
+  Image,
+  StyleSheet,
+  Dimensions,
+  ActivityIndicator,
+} from "react-native";
+import { QuranImages } from "../constants/imageMap";
+import { useQuranPage } from "../hooks/useQuranPage";
+import SuraNameBar from "../../assets/images/sura_name_bar.svg";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 // Aspect ratio 1440 / 232 = 6.206
 const LINE_ASPECT_RATIO = 1440 / 232;
 const LINE_HEIGHT = width / LINE_ASPECT_RATIO;
+const SURA_NAME_BAR_WIDTH = width * 0.9;
+const SURA_NAME_BAR_HEIGHT = LINE_HEIGHT * 0.8;
 
 interface Props {
   pageNumber: number;
@@ -14,7 +23,11 @@ interface Props {
   activeVerse?: number | null;
 }
 
-export const QuranPage: React.FC<Props> = ({ pageNumber, activeChapter, activeVerse }) => {
+export const QuranPage: React.FC<Props> = ({
+  pageNumber,
+  activeChapter,
+  activeVerse,
+}) => {
   const { page, loading } = useQuranPage(pageNumber);
   const images = QuranImages[pageNumber];
 
@@ -30,28 +43,59 @@ export const QuranPage: React.FC<Props> = ({ pageNumber, activeChapter, activeVe
     return <View style={styles.container} />;
   }
 
+  const renderSurahTitleBackgrounds = (lineIndex: number) => {
+    if (!page) return null;
+
+    return Array.from(page.chapterHeaders1441)
+      .filter((header) => header.line === lineIndex)
+      .map((header, i) => {
+        const centerX = width * (1.0 - header.centerX);
+        const centerY = LINE_HEIGHT * header.centerY;
+
+        const left = centerX - SURA_NAME_BAR_WIDTH / 2;
+        const top = centerY - SURA_NAME_BAR_HEIGHT / 2 + 8;
+
+        return (
+          <View
+            key={`surah-title-bg-${lineIndex}-${i}`}
+            pointerEvents="none"
+            style={{
+              position: "absolute",
+              left,
+              top,
+            }}
+          >
+            <SuraNameBar
+              width={SURA_NAME_BAR_WIDTH}
+              height={SURA_NAME_BAR_HEIGHT}
+            />
+          </View>
+        );
+      });
+  };
+
   const renderHighlights = (lineIndex: number) => {
     if (!page || !activeVerse || !activeChapter) return null;
 
-    const versesToHighlight = page.verses1441.filter(v => 
-      v.chapter?.number === activeChapter && v.number === activeVerse
+    const versesToHighlight = page.verses1441.filter(
+      (v) => v.chapter?.number === activeChapter && v.number === activeVerse
     );
 
-    return versesToHighlight.map(v => {
-      const highlights = v.highlights1441.filter(h => h.line === lineIndex);
+    return versesToHighlight.map((v) => {
+      const highlights = v.highlights1441.filter((h) => h.line === lineIndex);
       return highlights.map((h, i) => {
         const left = width * (1.0 - h.right);
         const w = width * (h.right - h.left);
-        
+
         return (
           <View
             key={`${v.verseID}-${i}`}
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: left,
               width: w,
-              height: '100%',
-              backgroundColor: 'rgba(88, 168, 105, 0.4)', // Quran green highlight
+              height: "100%",
+              backgroundColor: "rgba(88, 168, 105, 0.4)", // Quran green highlight
               borderRadius: 4,
             }}
           />
@@ -65,9 +109,10 @@ export const QuranPage: React.FC<Props> = ({ pageNumber, activeChapter, activeVe
       <View style={styles.linesContainer}>
         {images.map((source, index) => (
           <View key={index} style={{ width, height: LINE_HEIGHT }}>
+            {renderSurahTitleBackgrounds(index)}
             <Image
               source={source}
-              style={{ width: '100%', height: '100%' }}
+              style={{ width: "100%", height: "100%" }}
               resizeMode="contain"
             />
             {renderHighlights(index)}
@@ -81,14 +126,14 @@ export const QuranPage: React.FC<Props> = ({ pageNumber, activeChapter, activeVe
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF8E1',
-    justifyContent: 'center',
+    backgroundColor: "#FFF8E1",
+    justifyContent: "center",
   },
   linesContainer: {
-    flexDirection: 'column',
-    justifyContent: 'center',
+    flexDirection: "column",
+    justifyContent: "center",
   },
   center: {
-    alignItems: 'center',
+    alignItems: "center",
   },
 });
