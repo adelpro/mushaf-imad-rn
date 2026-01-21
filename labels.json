@@ -1,0 +1,37 @@
+[
+  {
+    "name": "bug",
+    "color": "d73a4a",
+    "description": "Something isn't working"
+  },
+  {
+    "name": "feature",
+    "color": "3fb550",
+    "description": "New feature or request"
+  },
+  {
+    "name": "enhancement",
+    "color": "a2eeef",
+    "description": "Improvement to existing feature"
+  },
+  {
+    "name": "documentation",
+    "color": "0075ca",
+    "description": "Improvements or additions to documentation"
+  },
+  {
+    "name": "good first issue",
+    "color": "7057ff",
+    "description": "Good for newcomers"
+  },
+  {
+    "name": "help wanted",
+    "color": "008672",
+    "description": "Extra attention is needed"
+  },
+  {
+    "name": "refactor",
+    "color": "d4c5f9",
+    "description": "A code change that neither fixes a bug nor adds a feature"
+  }
+]
